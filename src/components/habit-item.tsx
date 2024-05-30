@@ -1,4 +1,4 @@
-import { Habit } from "../../data/habits";
+import { Habit } from "../data/habits";
 
 export function HabitItem({ habit }: { habit: Habit }) {
   return (

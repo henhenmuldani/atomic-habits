@@ -1,136 +1,89 @@
-import { useState, FormEvent } from "react";
-import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
-import dayjs from "dayjs";
-import "dayjs/locale/id"; // import locale
-import { dataHabits } from "./data/habits";
-import { HabitItem } from "./components/ui/habit-item";
-import { Habit } from "../src/data/habits";
+import { Button } from "./components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { useState, ChangeEvent, useEffect } from "react";
+import { type Habit, dataHabits } from "./data/habits";
 
 export function App() {
-  const [currentDate, setCurrentDate] = useState(dayjs().locale("id"));
-  const [inputHabit, setInputHabit] = useState<{
-    habit: Habit;
-  }>({
-    habit: {
-      id: 0,
+  const [habits, setHabits] = useState<Habit[]>(dataHabits);
+
+  const handleAddHabit = () => {
+    const newHabit: Habit = {
+      id: crypto.randomUUID(),
       name: "",
       description: "",
-      done: false,
-      startTime: "",
-      endTime: "",
-    },
-  });
-
-  const changeDate = (days: number) => {
-    setCurrentDate((currentDate) => currentDate.add(days, "day"));
-  };
-
-  const addHabit = (event: FormEvent) => {
-    event.preventDefault();
-
-    const newHabit = {
-      id: dataHabits.length + 1,
-      name: inputHabit.habit.name,
-      description: inputHabit.habit.description,
-      done: false,
-      startTime: "",
-      endTime: "",
+      isDone: false,
+      startTime: new Date(),
+      endTime: new Date(),
     };
 
-    dataHabits.push(newHabit);
+    setHabits([...habits, newHabit]);
+  };
 
-    setInputHabit({
-      habit: {
-        id: 0,
-        name: "",
-        description: "",
-        done: false,
-        startTime: "",
-        endTime: "",
-      },
+  const handleInputChangeHabit = (
+    id: string,
+    key: keyof Habit,
+    e: ChangeEvent<HTMLInputElement>
+  ) => {
+    const newHabits = habits.map((habit) => {
+      if (habit.id === id) {
+        return { ...habit, [key]: e.target.value };
+      }
+      return habit;
     });
+
+    setHabits(newHabits);
+  };
+
+  useEffect(() => {
+    console.log(habits);
+  }, [habits]);
+
+  const handleDeleteHabit = (id: string) => {
+    const newHabits = habits.filter((habit) => habit.id !== id);
+    setHabits(newHabits);
   };
 
   return (
-    <div className="min-h-screen bg-slate-200">
+    <div className="min-h-screen bg-gray-200">
       <main className="max-w-2xl p-2 mx-auto space-y-2">
-        <h1 className="text-3xl font-bold underline">Atomic Habits</h1>
-        <form action="" onSubmit={addHabit} className="p-4 bg-white rounded-lg">
-          <h1 className="text-xl font-bold text-center">Form Habit</h1>
-          <div className="mb-2">
-            <label htmlFor="name" className="block mb-2 text-sm font-bold">
-              Habit Name
-            </label>
-            <input
-              required
-              type="text"
-              id="name"
-              name="name"
-              value={inputHabit.habit.name}
-              onChange={(event) =>
-                setInputHabit({
-                  habit: {
-                    ...inputHabit.habit,
-                    name: event.target.value,
-                  },
-                })
-              }
-              className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
-            />
-          </div>
-          <div className="mb-2">
-            <label
-              htmlFor="description"
-              className="block mb-2 text-sm font-bold"
-            >
-              Habit Description
-            </label>
-            <input
-              required
-              type="text"
-              id="description"
-              name="description"
-              value={inputHabit.habit.description}
-              onChange={(event) =>
-                setInputHabit({
-                  habit: {
-                    ...inputHabit.habit,
-                    description: event.target.value,
-                  },
-                })
-              }
-              className="w-full px-3 py-2 leading-tight text-gray-700 border rounded shadow appearance-none focus:outline-none focus:shadow-outline"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full p-3 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-800"
-          >
-            Submit
-          </button>
-        </form>
-        <div className="flex items-center justify-between w-full px-2 py-2 bg-gray-100 rounded">
-          <button
-            onClick={() => changeDate(-1)}
-            className="p-2 bg-white rounded hover:bg-slate-200"
-          >
-            <FaAngleLeft />
-          </button>
-          <h1>{currentDate.format("dddd, DD MMM YYYY")}</h1>
-          <button
-            onClick={() => changeDate(1)}
-            className="p-2 bg-white rounded hover:bg-slate-200"
-          >
-            <FaAngleRight />
-          </button>
-        </div>
-        <ul>
-          {dataHabits.map((habit) => (
-            <li key={habit.id}>
-              <HabitItem habit={habit} />
-            </li>
-          ))}
-        </ul>
+        <h1>Atomic Habits</h1>
+
+        {habits.map((habit) => (
+          <Card key={habit.id}>
+            <div className="flex flex-row items-center p-4">
+              <Checkbox className="ml-4" />
+              <div className="flex items-center justify-between w-full">
+                <div className="w-full p-4 space-y-1">
+                  <Input
+                    className="border-none"
+                    value={habit.name}
+                    onChange={(e) =>
+                      handleInputChangeHabit(habit.id, "name", e)
+                    }
+                    placeholder="Title"
+                  />
+                  <Input
+                    className="border-none "
+                    value={habit.description}
+                    onChange={(e) =>
+                      handleInputChangeHabit(habit.id, "description", e)
+                    }
+                    placeholder="Description"
+                  />
+                </div>
+                <Button
+                  onClick={() => handleDeleteHabit(habit.id)}
+                  variant={"destructive"}
+                >
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </Card>
+        ))}
+        <Button onClick={handleAddHabit}>Add</Button>
       </main>
     </div>
   );

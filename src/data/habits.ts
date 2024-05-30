@@ -1,35 +1,27 @@
 export type Habit = {
-  id: number;
+  id: string;
   name: string;
   description: string;
-  done: boolean;
-  startTime: string;
-  endTime: string;
+  isDone: boolean;
+  startTime: Date;
+  endTime: Date;
 };
 
 export const dataHabits: Habit[] = [
   {
-    id: 1,
+    id: "1",
     name: "Sarapan",
     description: "Sarapan Bubur Ayam",
-    done: false,
-    startTime: "06:00",
-    endTime: "06:30",
+    isDone: false,
+    startTime: new Date("2021-09-01T06:00:00.000Z"),
+    endTime: new Date("2021-09-01T06:00:00.000Z"),
   },
   {
-    id: 2,
+    id: "2",
     name: "Olahraga",
     description: "Lari Pagi",
-    done: false,
-    startTime: "06:30",
-    endTime: "07:00",
-  },
-  {
-    id: 3,
-    name: "Mandi",
-    description: "Mandi Pagi",
-    done: false,
-    startTime: "07:00",
-    endTime: "07:30",
+    isDone: false,
+    startTime: new Date("2021-09-01T06:00:00.000Z"),
+    endTime: new Date("2021-09-01T06:00:00.000Z"),
   },
 ];
