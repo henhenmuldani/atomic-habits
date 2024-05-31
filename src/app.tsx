@@ -3,12 +3,13 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { useState, ChangeEvent, useEffect } from "react";
-import { type Habit, dataHabits } from "./data/habits";
+import { type HabitList, type Habit, dataHabits } from "./data/habits";
 
 export function App() {
-  const [habits, setHabits] = useState<Habit[]>(dataHabits);
+  const [habits, setHabits] = useState<HabitList>(dataHabits);
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
-  const handleAddHabit = () => {
+  const handleAddHabit = (date: string) => {
     const newHabit: Habit = {
       id: crypto.randomUUID(),
       name: "",
@@ -18,72 +19,132 @@ export function App() {
       endTime: new Date(),
     };
 
-    setHabits([...habits, newHabit]);
+    setHabits((prevHabits) => {
+      const dateHabits = prevHabits[date] || [];
+      return {
+        ...prevHabits,
+        [date]: [...dateHabits, newHabit],
+      };
+    });
   };
 
+  const addHabitForToday = () => {
+    const today = new Date().toISOString().split("T")[0];
+    handleAddHabit(today);
+  };
+
+  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSelectedDate(event.target.value);
+  };
+
+  const filteredHabits = selectedDate ? habits[selectedDate] || [] : [];
+
   const handleInputChangeHabit = (
+    date: string,
     id: string,
     key: keyof Habit,
     e: ChangeEvent<HTMLInputElement>
   ) => {
-    const newHabits = habits.map((habit) => {
-      if (habit.id === id) {
-        return { ...habit, [key]: e.target.value };
-      }
-      return habit;
+    setHabits((prevHabits) => {
+      const dateHabits = prevHabits[date] || [];
+      const updatedHabits = dateHabits.map((habit) =>
+        habit.id === id ? { ...habit, [key]: e.target.value } : habit
+      );
+      return {
+        ...prevHabits,
+        [date]: updatedHabits,
+      };
     });
+  };
 
+  const handleDeleteHabit = (id: string) => {
+    console.log("Delete habit with id", id);
+    const newHabits = Object.fromEntries(
+      Object.entries(habits).map(([date, dateHabits]) => [
+        date,
+        dateHabits.filter((habit) => habit.id !== id),
+      ])
+    );
+    console.log(newHabits);
     setHabits(newHabits);
   };
 
   useEffect(() => {
+    setSelectedDate("2024-05-31");
     console.log(habits);
   }, [habits]);
-
-  const handleDeleteHabit = (id: string) => {
-    const newHabits = habits.filter((habit) => habit.id !== id);
-    setHabits(newHabits);
-  };
 
   return (
     <div className="min-h-screen bg-gray-200">
       <main className="max-w-2xl p-2 mx-auto space-y-2">
         <h1>Atomic Habits</h1>
+        <div>
+          <label>
+            Filter by date:
+            <input
+              type="date"
+              value={selectedDate}
+              onChange={handleDateChange}
+            />
+          </label>
 
-        {habits.map((habit) => (
-          <Card key={habit.id}>
-            <div className="flex flex-row items-center p-4">
-              <Checkbox className="ml-4" />
-              <div className="flex items-center justify-between w-full">
-                <div className="w-full p-4 space-y-1">
-                  <Input
-                    className="border-none"
-                    value={habit.name}
-                    onChange={(e) =>
-                      handleInputChangeHabit(habit.id, "name", e)
-                    }
-                    placeholder="Title"
-                  />
-                  <Input
-                    className="border-none "
-                    value={habit.description}
-                    onChange={(e) =>
-                      handleInputChangeHabit(habit.id, "description", e)
-                    }
-                    placeholder="Description"
-                  />
+          {selectedDate && (
+            <div>
+              <h2>{selectedDate}</h2>
+              {filteredHabits.length > 0 ? (
+                <div>
+                  {filteredHabits.map((habit) => (
+                    <Card key={habit.id}>
+                      <div className="flex flex-row items-center p-4">
+                        <Checkbox className="ml-4" />
+                        <div className="flex items-center justify-between w-full">
+                          <div className="w-full p-4 space-y-1">
+                            <Input
+                              className="border-none"
+                              value={habit.name}
+                              onChange={(e) => {
+                                handleInputChangeHabit(
+                                  selectedDate,
+                                  habit.id,
+                                  "name",
+                                  e
+                                );
+                              }}
+                              placeholder="Title"
+                            />
+                            <Input
+                              className="border-none "
+                              value={habit.description}
+                              onChange={(e) =>
+                                handleInputChangeHabit(
+                                  selectedDate,
+                                  habit.id,
+                                  "description",
+                                  e
+                                )
+                              }
+                              placeholder="Description"
+                            />
+                          </div>
+                          <Button
+                            onClick={() => handleDeleteHabit(habit.id)}
+                            variant={"destructive"}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-                <Button
-                  onClick={() => handleDeleteHabit(habit.id)}
-                  variant={"destructive"}
-                >
-                  Delete
-                </Button>
-              </div>
+              ) : (
+                <p>No habits for this date.</p>
+              )}
             </div>
-          </Card>
-        ))}
-        <Button onClick={handleAddHabit}>Add</Button>
+          )}
+        </div>
+
+        <Button onClick={addHabitForToday}>Add</Button>
       </main>
     </div>
   );
