@@ -1,22 +1,39 @@
 import { Button } from "./components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
+import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { HabitItem } from "./components/habit-item";
 import { useState, ChangeEvent, useEffect } from "react";
 import { type HabitList, type Habit, dataHabits } from "./data/habits";
+import { ThemeProvider } from "@/components/theme-provider";
+import { NavBar } from "./components/nav-bar";
+import { DateToggle } from "./components/date-toggle";
+import dayjs from "dayjs";
+import "dayjs/locale/id"; // import locale
+import { TimePicker } from "@/components/ui/datetime-picker";
+import { TimeValue } from "react-aria";
+import { Time } from "@internationalized/date";
 
 export function App() {
   const [habits, setHabits] = useState<HabitList>(dataHabits);
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState("");
 
-  const handleAddHabit = (date: string) => {
+  // function to add days to the selected date
+  const addDay = (days: number) => {
+    setSelectedDate(dayjs(selectedDate).add(days, "day").format("YYYY-MM-DD"));
+  };
+
+  // const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   setSelectedDate(event.target.value);
+  // };
+
+  // function to add a new habit to the selected date
+  const addHabit = (date: string) => {
     const newHabit: Habit = {
       id: crypto.randomUUID(),
       name: "",
       description: "",
       isDone: false,
-      startTime: new Date(),
-      endTime: new Date(),
+      startTime: "00:00",
+      endTime: "00:00",
     };
 
     setHabits((prevHabits) => {
@@ -28,18 +45,11 @@ export function App() {
     });
   };
 
-  const addHabitForToday = () => {
-    const today = new Date().toISOString().split("T")[0];
-    handleAddHabit(today);
-  };
+  // filter the habits based on the selected date
+  const filteredHabitsByDate = selectedDate ? habits[selectedDate] || [] : [];
 
-  const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedDate(event.target.value);
-  };
-
-  const filteredHabits = selectedDate ? habits[selectedDate] || [] : [];
-
-  const handleInputChangeHabit = (
+  // function to change the habit value
+  const updateHabit = (
     date: string,
     id: string,
     key: keyof Habit,
@@ -57,7 +67,8 @@ export function App() {
     });
   };
 
-  const handleDeleteHabit = (id: string) => {
+  // function to delete a habit
+  const deleteHabit = (id: string) => {
     console.log("Delete habit with id", id);
     const newHabits = Object.fromEntries(
       Object.entries(habits).map(([date, dateHabits]) => [
@@ -70,82 +81,104 @@ export function App() {
   };
 
   useEffect(() => {
-    setSelectedDate("2024-05-31");
+    setSelectedDate(selectedDate || dayjs().format("YYYY-MM-DD"));
     console.log(habits);
-  }, [habits]);
+    // console.log(convertStringToTimeValue("12:30"));
+  }, [habits, selectedDate]);
+
+  const handleTimeChange = (
+    date: string,
+    newTime: TimeValue,
+    id: string,
+    key: keyof Habit
+  ) => {
+    // Convert TimeValue to a formatted string (HH:MM)
+    const hours = newTime.hour.toString().padStart(2, "0");
+    const minutes = newTime.minute.toString().padStart(2, "0");
+    const formattedTime = `${hours}:${minutes}`;
+    console.log(formattedTime);
+
+    setHabits((prevHabits) => {
+      const dateHabits = prevHabits[date] || [];
+      const updatedHabits = dateHabits.map((habit) =>
+        habit.id === id ? { ...habit, [key]: formattedTime } : habit
+      );
+      console.log(updatedHabits);
+      return {
+        ...prevHabits,
+        [date]: updatedHabits,
+      };
+    });
+  };
+
+  // Split the time string into hours and minutes
+  const convertStringToTimeValue = (timeString: string) => {
+    const [hours, minutes] = timeString.split(":").map(Number);
+    return { hours, minutes };
+  };
 
   return (
-    <div className="min-h-screen bg-gray-200">
-      <main className="max-w-2xl p-2 mx-auto space-y-2">
-        <h1>Atomic Habits</h1>
-        <div>
-          <label>
-            Filter by date:
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={handleDateChange}
-            />
-          </label>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <div className="max-w-2xl min-h-screen p-2 mx-auto">
+        <NavBar />
+
+        <main>
+          {/* <label>
+              Filter by date:
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={handleDateChange}
+              />
+            </label> */}
 
           {selectedDate && (
             <div>
-              <h2>{selectedDate}</h2>
-              {filteredHabits.length > 0 ? (
+              <DateToggle addDay={addDay} selectedDate={selectedDate} />
+              {filteredHabitsByDate.length > 0 ? (
                 <div>
-                  {filteredHabits.map((habit) => (
-                    <Card key={habit.id}>
-                      <div className="flex flex-row items-center p-4">
-                        <Checkbox className="ml-4" />
-                        <div className="flex items-center justify-between w-full">
-                          <div className="w-full p-4 space-y-1">
-                            <Input
-                              className="border-none"
-                              value={habit.name}
-                              onChange={(e) => {
-                                handleInputChangeHabit(
-                                  selectedDate,
-                                  habit.id,
-                                  "name",
-                                  e
-                                );
-                              }}
-                              placeholder="Title"
-                            />
-                            <Input
-                              className="border-none "
-                              value={habit.description}
-                              onChange={(e) =>
-                                handleInputChangeHabit(
-                                  selectedDate,
-                                  habit.id,
-                                  "description",
-                                  e
-                                )
-                              }
-                              placeholder="Description"
-                            />
-                          </div>
-                          <Button
-                            onClick={() => handleDeleteHabit(habit.id)}
-                            variant={"destructive"}
-                          >
-                            Delete
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
+                  {filteredHabitsByDate.map((habit) => (
+                    <div key={habit.id}>
+                      <HabitItem
+                        key={habit.id}
+                        habit={habit}
+                        updateHabit={updateHabit}
+                        deleteHabit={deleteHabit}
+                        selectedDate={selectedDate}
+                      />
+                      <TimePicker
+                        aria-label="Time Picker"
+                        value={
+                          new Time(
+                            convertStringToTimeValue(habit.startTime).hours,
+                            convertStringToTimeValue(habit.startTime).minutes
+                          )
+                        }
+                        onChange={(newTime) =>
+                          handleTimeChange(
+                            selectedDate,
+                            newTime,
+                            habit.id,
+                            "startTime"
+                          )
+                        }
+                      />
+                    </div>
                   ))}
                 </div>
               ) : (
-                <p>No habits for this date.</p>
+                <Card>
+                  <CardHeader className="items-center justify-center">
+                    <CardTitle>No habits on this date</CardTitle>
+                  </CardHeader>
+                </Card>
               )}
             </div>
           )}
-        </div>
 
-        <Button onClick={addHabitForToday}>Add</Button>
-      </main>
-    </div>
+          <Button onClick={() => addHabit(selectedDate)}>Add</Button>
+        </main>
+      </div>
+    </ThemeProvider>
   );
 }

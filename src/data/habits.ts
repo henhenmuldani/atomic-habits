@@ -3,8 +3,8 @@ export type Habit = {
   name: string;
   description: string;
   isDone: boolean;
-  startTime: Date;
-  endTime: Date;
+  startTime: string;
+  endTime: string;
 };
 
 export type HabitList = {
@@ -15,19 +15,19 @@ export const dataHabits: HabitList = {
   "2024-05-31": [
     {
       id: "1",
-      name: "Sarapan",
-      description: "Sarapan Bubur Ayam",
+      name: "Olahraga",
+      description: "lari di gasibu",
       isDone: false,
-      startTime: new Date("2021-09-01T06:00:00.000Z"),
-      endTime: new Date("2021-09-01T06:00:00.000Z"),
+      startTime: "07:00",
+      endTime: "08:00",
     },
     {
       id: "2",
-      name: "Olahraga",
-      description: "Lari Pagi",
+      name: "Sarapan",
+      description: "makan lotek",
       isDone: false,
-      startTime: new Date("2021-09-01T06:00:00.000Z"),
-      endTime: new Date("2021-09-01T06:00:00.000Z"),
+      startTime: "08:00",
+      endTime: "09:00",
     },
   ],
 };
