@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   CalendarIcon,
   ChevronLeftIcon,
@@ -276,7 +277,7 @@ function TimeField(props: AriaTimeFieldProps<TimeValue>) {
   });
   const {
     fieldProps: { ...fieldProps },
-    labelProps,
+    // labelProps,
   } = useTimeField(props, state, ref);
 
   return (
