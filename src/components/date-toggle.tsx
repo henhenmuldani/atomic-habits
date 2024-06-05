@@ -1,7 +1,6 @@
 import { FaAngleLeft, FaAngleRight } from "react-icons/fa";
 import { Button } from "./ui/button";
 import dayjs from "dayjs";
-import "dayjs/locale/id";
 
 export function DateToggle({
   addDay,
@@ -10,16 +9,14 @@ export function DateToggle({
   addDay: (days: number) => void;
   selectedDate: string;
 }>) {
-  const currentDateLocale = dayjs(selectedDate)
-    .locale("id")
-    .format("dddd, DD MMM YYYY");
+  const currentDateLocale = dayjs(selectedDate).format("dddd, DD MMM YYYY");
 
   return (
     <div className="flex items-center justify-between w-full px-2 py-2 rounded">
       <Button onClick={() => addDay(-1)} className="p-2 rounded">
         <FaAngleLeft />
       </Button>
-      <h1>{currentDateLocale}</h1>
+      <h1 className="text-lg font-medium">{currentDateLocale}</h1>
       <Button onClick={() => addDay(+1)} className="p-2 rounded ">
         <FaAngleRight />
       </Button>
