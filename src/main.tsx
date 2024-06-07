@@ -2,7 +2,11 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { RootRoute } from "@/routes/root";
 import { ErrorRoute } from "@/routes/error";
-import { HabitsRoute } from "@/routes/habits";
+import {
+  HabitsRoute,
+  loader as habitsLoader,
+  action as habitsAction,
+} from "@/routes/habits";
 import "./index.css";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -16,7 +20,20 @@ const router = createBrowserRouter([
       {
         path: "/",
         element: <HabitsRoute />,
+        loader: habitsLoader,
+        action: habitsAction,
       },
+      {
+        path: "/:dateString",
+        element: <HabitsRoute />,
+        loader: habitsLoader,
+        action: habitsAction,
+      },
+      // {
+      //   path: "/:dateString",
+      //   element: <HabitsRoute />,
+      //   loader: habitsDateLoader,
+      // },
     ],
   },
 ]);
