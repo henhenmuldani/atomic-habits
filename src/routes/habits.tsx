@@ -9,6 +9,8 @@ import { createHabit, getHabitsByDate } from "@/storage/habit";
 import { DateToggle } from "@/components/date-toggle";
 import dayjs from "dayjs";
 import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { HabitItem } from "@/components/habit-item";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -21,8 +23,10 @@ export async function loader({ params }: LoaderFunctionArgs) {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export async function action() {
-  const habits = await createHabit();
+export async function action({ params }: LoaderFunctionArgs) {
+  const dateString = params.dateString;
+
+  const habits = await createHabit(dateString ?? dayjs().format("YYYY-MM-DD"));
   return { habits };
 }
 
@@ -52,15 +56,15 @@ export function HabitsRoute() {
     navigate(`/${newDate}`);
   };
 
-  console.log({ habitsByDate });
-
   return (
     <div>
       <main>
-        <h1>Hello World</h1>
         <DateToggle addDay={addDay} selectedDate={selectedDate} />
+        {habitsByDate?.items.map((habit) => (
+          <HabitItem key={habit.id} habit={habit} />
+        ))}
         <Form method="post">
-          <button>Add</button>
+          <Button>Add</Button>
         </Form>
         <pre>{JSON.stringify(habitsByDate, null, 2)}</pre>
       </main>

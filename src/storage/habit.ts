@@ -17,25 +17,27 @@ export async function getHabits(query?: string) {
 export async function getHabitsByDate(dateString: string) {
   await fakeNetwork(`:${dateString}`);
   const habits = (await localforage.getItem("habits")) as HabitListByDate[];
+  if (!habits) {
+    return null;
+  }
   const habit = habits.find((habit) => habit.dateString === dateString);
-  return habit ?? null;
+  return habit;
 }
 
-// TODO Fix this
-export async function createHabit() {
-  await fakeNetwork(``);
+export async function createHabit(dateString: string) {
+  await fakeNetwork(`:${dateString}`);
 
   const newHabitItem: Habit = {
-    id: "1",
-    name: "Read a book",
-    description: "Read a book for 30 minutes",
+    id: crypto.randomUUID(),
+    name: "Title",
+    description: "Description",
     isDone: false,
     time: "00:00",
     createdAt: Date.now(),
   };
 
   const newHabitDate: HabitListByDate = {
-    dateString: "2024-06-08",
+    dateString: dateString,
     items: [newHabitItem],
   };
 
@@ -45,15 +47,38 @@ export async function createHabit() {
   );
 
   if (habitIndex === -1) {
-    const newHabits = [...habits, newHabitDate];
-    await set(newHabits);
-    return newHabitDate;
+    habits.push(newHabitDate);
   } else {
-    const newHabits = [...habits];
-    newHabits[habitIndex].items.push(newHabitItem);
-    await set(newHabits);
-    return newHabitDate;
+    habits[habitIndex].items.push(newHabitItem);
   }
+  await set(habits);
+  return habits;
+}
+
+export async function deleteItemHabit(dateString: string, id: string) {
+  const habits = (await localforage.getItem("habits")) as HabitListByDate[];
+  const habit = habits.find((habit) => habit.dateString === dateString);
+  if (!habit) {
+    return;
+  }
+
+  const habitItemIndex = habit.items.findIndex((item) => item.id === id);
+  console.log({ habitItemIndex });
+
+  if (habitItemIndex > -1) {
+    if (habit.items.length === 1) {
+      const habitIndex = habits.findIndex(
+        (habit) => habit.dateString === dateString
+      );
+      habits.splice(habitIndex, 1);
+    } else {
+      habit.items.splice(habitItemIndex, 1);
+    }
+
+    await set(habits);
+    return true;
+  }
+  return false;
 }
 
 function set(habits: HabitListByDate[]) {

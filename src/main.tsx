@@ -7,6 +7,7 @@ import {
   loader as habitsLoader,
   action as habitsAction,
 } from "@/routes/habits";
+import { action as destroyAction } from "./routes/destroy";
 import "./index.css";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
         element: <HabitsRoute />,
         loader: habitsLoader,
         action: habitsAction,
+      },
+      {
+        path: "/:dateString/:habitId/destroy",
+        action: destroyAction,
       },
       // {
       //   path: "/:dateString",

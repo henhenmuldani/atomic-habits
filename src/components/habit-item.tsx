@@ -3,36 +3,19 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ChangeEvent } from "react";
+import { ChangeEvent, useState } from "react";
 import { FaTrashCan, FaCheckDouble } from "react-icons/fa6";
 import { TimePicker } from "@/components/ui/datetime-picker";
 import { Time } from "@internationalized/date";
 import { TimeValue } from "react-aria";
+import { Form } from "react-router-dom";
 
 export function HabitItem({
   habit,
-  updateHabit,
-  deleteHabit,
-  selectedDate,
-  handleTimeChange,
-  checkHabit,
-}: Readonly<{
+}: // onEdit,
+Readonly<{
   habit: Habit;
-  updateHabit: (
-    date: string,
-    id: string,
-    key: keyof Habit,
-    e: ChangeEvent<HTMLInputElement>
-  ) => void;
-  deleteHabit: (id: string) => void;
-  selectedDate: string;
-  handleTimeChange: (
-    date: string,
-    newTime: TimeValue,
-    id: string,
-    key: keyof Habit
-  ) => void;
-  checkHabit: (id: string) => void;
+  // onEdit: (id: string, habit: Habit) => void;
 }>) {
   // Split the time string into hours and minutes
   const convertStringToTimeValue = (timeString: string) => {
@@ -45,7 +28,7 @@ export function HabitItem({
       <div className="flex flex-row items-center">
         <Checkbox
           className="ml-4"
-          onCheckedChange={() => checkHabit(habit.id)}
+          // onCheckedChange={() => checkHabit(habit.id)}
         />
         <div className="flex items-center justify-between w-full">
           <div className="w-full m-4 space-y-4">
@@ -54,8 +37,8 @@ export function HabitItem({
                 habit.isDone ? "line-through" : ""
               }`}
               value={habit.name}
-              onChange={(e) => {
-                updateHabit(selectedDate, habit.id, "name", e);
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                console.log(e.target.value);
               }}
               placeholder="Title"
             />
@@ -64,9 +47,9 @@ export function HabitItem({
                 habit.isDone ? "line-through" : ""
               }`}
               value={habit.description}
-              onChange={(e) =>
-                updateHabit(selectedDate, habit.id, "description", e)
-              }
+              onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                console.log(e.target.value);
+              }}
               placeholder="Description"
             />
             <div className="flex space-x-5">
@@ -78,17 +61,20 @@ export function HabitItem({
                     convertStringToTimeValue(habit.time).minutes
                   )
                 }
-                onChange={(newTime) =>
-                  handleTimeChange(selectedDate, newTime, habit.id, "time")
-                }
+                // onChange={(newTime) =>
+                //   handleTimeChange(selectedDate, newTime, habit.id, "time")
+                // }
               />
-              <Button
-                className="mr-4"
-                onClick={() => deleteHabit(habit.id)}
-                variant={"destructive"}
-              >
-                <FaTrashCan />
-              </Button>
+              <Form method="post" action={`${habit.id}/destroy`}>
+                <Button
+                  type="submit"
+                  className="mr-4"
+                  // onClick={() => deleteHabit(habit.id)}
+                  variant={"destructive"}
+                >
+                  <FaTrashCan />
+                </Button>
+              </Form>
             </div>
           </div>
         </div>
